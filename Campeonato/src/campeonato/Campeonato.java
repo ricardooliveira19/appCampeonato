@@ -14,7 +14,7 @@ public class Campeonato {
     static int n; // QUANTIDADE DE TIMES
     static String[] times; // TIMES (0 - NOME DO TIME)
     static String[] jogadores; // JOGADORES (0 - NOME DO JOGADOR)
-    static String[][] formado; // TIME X JOGADOR (0-TIME, 1-JOGADOR, 2-VALIDAÇÃO)
+    static String[][] validacao; // TIME X JOGADOR (0-TIME, 1-JOGADOR, 2-VALIDAÇÃO)
     static String[][] mataMata; // TIME X TIME (0-TIME, 1-JOGADOR, 2-TIME, 3-JOGADOR)
     static String[][] classificacao; // CLASSIFICAÇÃO POR PONTOS (0-TIME, 1-JOGADOR, 2-PONTOS, 3-JOGOS, 4-VITÓRIAS, 5-EMPATES, 6-DERROTAS, 7-GOLS PRÓ, 8-GOLS CONTRA, 9-SALDO DE GOLS)
     static String paraTexto; // PARA VALIDAÇÃO
@@ -22,30 +22,50 @@ public class Campeonato {
     public static void main(String[] args) {
         timesEJogadores(); // RECEBE TIMES E JOGADORES
         sorteioTimes(); // DEFINE TIME DE CADA JOGADOR
-        porPontosCorrido(formado[0], 4, formado[1], 1); // ATUALIZA PONTUAÇÃO
+        porPontosCorrido(0, 4, 1, 4); //PASSAR POSICAO DOS TIMES E GOLS
 
         imprimePontuacao();
     }
 
-    static void porPontosCorrido(String time1[], int gols1, String time2[], int gols2) {
-        // ATRIBUINDO INFORMAÇÕES SOMENTE PARA OS VENCEDORES||TIME1
-        // FUNÇÃO ATUALIZA AS INFORMAÇÕES DE PARTIDA, JOGOS, PONTOS
+    static void porPontosCorrido(int time1, int gols1, int time2, int gols2) { // FUNÇÃO ATUALIZA AS INFORMAÇÕES DE PARTIDA, JOGOS, PONTOS
+
         if (gols1 > gols2) { // VITÓRIA DO TIME 1
-            classificacao[0][2] = Integer.toString(Integer.parseInt(classificacao[0][2]) + 3); // PONTOS
-            classificacao[0][4] = Integer.toString(Integer.parseInt(classificacao[0][4]) + 1); // VITÓRIAS
+            classificacao[time1][8] = Integer.toString(Integer.parseInt(classificacao[time1][8]) + gols2); // GOLS CONTRAS
+            vitoria(time1, gols1);
+            classificacao[time2][8] = Integer.toString(Integer.parseInt(classificacao[time2][8]) + gols1); // GOLS CONTRAS
+            derrota(time2, gols2);
         } else if (gols1 == gols2) { // EMPATE
-            classificacao[0][2] = Integer.toString(Integer.parseInt(classificacao[0][2]) + 1); // PONTOS
-            classificacao[0][5] = Integer.toString(Integer.parseInt(classificacao[0][5]) + 1); // EMPATES
+            empate(time1, gols1);
+            empate(time2, gols2);
         } else { // VITÓRIA DO TIME 2
-            // DERROTA DO TIME 1
-            classificacao[0][6] = Integer.toString(Integer.parseInt(classificacao[0][6]) + 1); // DERROTAS
+            classificacao[time1][8] = Integer.toString(Integer.parseInt(classificacao[time1][8]) + gols2); // GOLS CONTRAS
+            derrota(time1, gols1);
+            classificacao[time2][8] = Integer.toString(Integer.parseInt(classificacao[time2][8]) + gols1); // GOLS CONTRAS
+            vitoria(time2, gols2);
         }
-        classificacao[0][0] = time1[0]; // TIME
-        classificacao[0][1] = time2[1]; // JOGADOR
-        classificacao[0][3] = Integer.toString(Integer.parseInt(classificacao[0][3]) + 1); // JOGOS
-        classificacao[0][7] = Integer.toString(Integer.parseInt(classificacao[0][7]) + gols1); // GOLS PRÓS
-        classificacao[0][8] = Integer.toString(Integer.parseInt(classificacao[0][8]) + gols2); // GOLS CONTRAS
-        classificacao[0][9] = Integer.toString(Integer.parseInt(classificacao[0][7]) - Integer.parseInt(classificacao[0][8])); // SALDO DE GOLS
+    }
+
+    static void vitoria(int posicao, int gols) { // PONTUAÇÃO DE VENCEDOR
+        classificacao[posicao][2] = Integer.toString(Integer.parseInt(classificacao[posicao][2]) + 3); // PONTOS
+        classificacao[posicao][3] = Integer.toString(Integer.parseInt(classificacao[posicao][3]) + 1); // JOGOS
+        classificacao[posicao][4] = Integer.toString(Integer.parseInt(classificacao[posicao][4]) + 1); // VITÓRIAS        
+        classificacao[posicao][7] = Integer.toString(Integer.parseInt(classificacao[posicao][7]) + gols); // GOLS PRÓS
+        classificacao[posicao][9] = Integer.toString(Integer.parseInt(classificacao[posicao][7]) - Integer.parseInt(classificacao[posicao][8])); // SALDO DE GOLS
+    }
+
+    static void empate(int posicao, int gols) { // PONTUAÇÃO DE DERROTA
+        classificacao[posicao][2] = Integer.toString(Integer.parseInt(classificacao[posicao][2]) + 1); // PONTOS
+        classificacao[posicao][3] = Integer.toString(Integer.parseInt(classificacao[posicao][3]) + 1); // JOGOS
+        classificacao[posicao][5] = Integer.toString(Integer.parseInt(classificacao[posicao][5]) + 1); // EMPATES
+        classificacao[posicao][7] = Integer.toString(Integer.parseInt(classificacao[posicao][7]) + gols); // GOLS PRÓS
+        classificacao[posicao][8] = Integer.toString(Integer.parseInt(classificacao[posicao][8]) + gols); // GOLS CONTRAS
+    }
+
+    static void derrota(int posicao, int gols) { // PONTUAÇÃO DE EMPATE
+        classificacao[posicao][3] = Integer.toString(Integer.parseInt(classificacao[posicao][3]) + 1); // JOGOS
+        classificacao[posicao][6] = Integer.toString(Integer.parseInt(classificacao[posicao][6]) + 1); // DERROTAS
+        classificacao[posicao][7] = Integer.toString(Integer.parseInt(classificacao[posicao][7]) + gols); // GOLS PRÓ
+        classificacao[posicao][9] = Integer.toString(Integer.parseInt(classificacao[posicao][7]) - Integer.parseInt(classificacao[posicao][8])); // SALDO DE GOLS
     }
 
     static void timesEJogadores() { // RECEBE TIMES E JOGADORES
@@ -69,9 +89,9 @@ public class Campeonato {
         //imprime(jogadores);
     }
 
-    static void setComplementar() {
+    static void setComplementar() { // SET MATRIZES E VETORES
         for (int i = 0; i < n; i++) {
-            formado[i][2] = "";
+            validacao[i][0] = "";
             classificacao[i][2] = "0";
             classificacao[i][3] = "0";
             classificacao[i][4] = "0";
@@ -83,35 +103,33 @@ public class Campeonato {
         }
     }
 
-    static void auxiliar() { // DEFINE TAMNHO DOS VETORES
+    static void auxiliar() { // DEFINE TAMNHO DOS VETORES/MATRIZES
         System.out.println("Quantidade de times? ");
         n = leitor.nextInt();
 
         jogadores = new String[n];
         classificacao = new String[n][10];
         times = new String[n];
-        formado = new String[n][3];
+        validacao = new String[n][1];
         mataMata = new String[n / 2][4];
-
     }
 
-    static void sorteioTimes() { // ACIONA O SORTEIO DE TIME X JOGADOR
-        for (int i = 0; i < formado.length; i++) {
-            formado[i][0] = times[i];
-            formado[i][1] = jogadores[aleatorio()];
-            formado[i][2] = paraTexto;
-
+    static void sorteioTimes() { // DEFINE TIME DE CADA JOGADOR
+        for (int i = 0; i < validacao.length; i++) {
+            classificacao[i][0] = times[i];
+            classificacao[i][1] = jogadores[aleatorio()];
+            validacao[i][0] = paraTexto;
         }
         setComplementar();
         imprimeTimesXJogadores();
     }
 
-    static int aleatorio() { // SORTEI JOGADOR PRA CADA TIME SEM REPETIÇÃO
+    static int aleatorio() { // SORTEIA JOGADOR PRA CADA TIME SEM REPETIÇÃO
         int verifica = random.nextInt(n); // NUMERO ALEATÓRIO
         paraTexto = String.valueOf(verifica); //CONVERTE NUMERO PARA STRING
 
         for (int i = 0; i < n; i++) {
-            if (formado[i][2].equals(paraTexto)) {
+            if (validacao[i][0].equals(paraTexto)) {
                 return aleatorio();
             }
         }
@@ -122,13 +140,13 @@ public class Campeonato {
         for (int i = 0; i < n; i++) {
             paraTexto = String.valueOf(random.nextInt(n)); //CONVERTE NUMERO PARA STRING
             for (int j = 0; j < (n / 2); j++) {
-                if (mataMata[j][0] == null && !paraTexto.equals(formado[i][2])) {
-                    mataMata[j][0] = formado[i][0];
-                    mataMata[j][1] = formado[i][1];
+                if (mataMata[j][0] == null && !paraTexto.equals(validacao[i][0])) {
+                    mataMata[j][0] = classificacao[i][0];
+                    mataMata[j][1] = classificacao[i][1];
                     break;
-                } else if (mataMata[j][2] == null && !formado[i][2].equals(paraTexto)) {
-                    mataMata[j][2] = formado[i][0];
-                    mataMata[j][3] = formado[i][1];
+                } else if (mataMata[j][2] == null && !validacao[i][0].equals(paraTexto)) {
+                    mataMata[j][2] = classificacao[i][0];
+                    mataMata[j][3] = classificacao[i][1];
                     break;
                 }
             }
@@ -142,8 +160,8 @@ public class Campeonato {
     }
 
     static void imprimeTimesXJogadores() { // IMPRESSÃO DO TIME DE CADA JOGADOR
-        for (String[] formado1 : formado) {
-            System.out.println(formado1[0] + " = " + formado1[1]);
+        for (String[] classificacao1 : classificacao) {
+            System.out.println(classificacao1[0] + " = " + classificacao1[1]);
         }
     }
 
